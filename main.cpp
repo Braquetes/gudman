@@ -71,6 +71,23 @@ vector<Producto> productos = {
 
 double cashback; // Se declara la variable afuera para que pueda ser utilizada globalmente
 
+int ObtenerNumeroValido(const string &mensaje) {
+    int numero;
+    while (true) {
+        cout << mensaje;
+        cin >> numero;
+
+        if (cin.fail() || numero < 0) {
+            cin.clear();  // Limpiar el estado de error
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Ignorar la entrada incorrecta
+            cout << "Entrada no válida. Por favor ingrese un número positivo." << endl;
+        } else {
+            return numero;
+        }
+    }
+}
+
+
 void MostrarProductos()
 {
     titulo("Productos disponibles");
@@ -103,74 +120,66 @@ void AgregarProducto(int seleccion)
 {
     if (seleccion < 1 || seleccion > productos.size())
     {
-        cout << "\nOpcion invalida, por favor seleccione una opcion valida: \n\n";
+        cout << "\nOpción inválida, por favor seleccione una opción válida: \n\n";
         return;
     }
+
     Producto productoSeleccionado = productos[seleccion - 1];
-    int cantidad;
     if (productoSeleccionado.inventario == 0)
     {
-        cout << "\nNo hay mas inventario del producto selecionado.\nPor favor seleccione algun otro producto\n";
+        cout << "\nNo hay más inventario del producto seleccionado.\nPor favor seleccione algún otro producto.\n";
         system("pause");
         system("cls");
         MostrarProductos();
         return;
     }
-    else
+
+    int cantidad = ObtenerNumeroValido("Ingrese la cantidad de productos a agregar o 0 para cancelar: ");
+
+    if (cantidad == 0)
     {
-        cout << "\nIngrese la cantidad de productos a agregar o 0 para cancelar: ";
-        cin >> cantidad;
-        if (cantidad == 0)
-        {
-            system("cls");
-            MostrarProductos();
-            return;
-        }
-        while (cantidad < 0 || cantidad > productoSeleccionado.inventario)
-        {
-            if (cantidad < 0)
-            {
-                cout << "Cantidad invalida, por favor ingrese una cantidad valida o 0 para cancelar: " << endl;
-            }
-            if (cantidad > productoSeleccionado.inventario)
-            {
-                cout << "\nSolo hay " << productoSeleccionado.inventario << " unidades disponibles, por favor ingrese una cantidad menor o 0 para cancelar: ";
-            }
-            if (cantidad == 0)
-            {
-                return;
-            }
-            cin >> cantidad;
-        }
-        if (cantidad > 0)
-        {
-            for (int i = 0; i < cantidad; i++)
-            {
-                carrito.push_back(productoSeleccionado);
-            }
+        system("cls");
+        MostrarProductos();
+        return;
+    }
 
-            for (auto it = productos.begin(); it != productos.end(); ++it)
-            {
-                if (it->nombre == productoSeleccionado.nombre)
-                {
-                    it->inventario -= cantidad;
-                    break;
-                }
-            }
+    if (cantidad > productoSeleccionado.inventario)
+    {
+        cout << "\nSolo hay " << productoSeleccionado.inventario << " unidades disponibles, por favor ingrese una cantidad menor o 0 para cancelar.\n";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        system("pause");
+        system("cls");
+        MostrarProductos();
+        return;
+    }
 
-            system("cls");
-            MostrarProductos();
-            if (cantidad == 1)
-            {
-                cout << "Se agrego un articulo '" << productoSeleccionado.nombre << "' al carrito.\n\n";
-            }
-            else
-            {
-                cout << "El producto '" << productoSeleccionado.nombre << "' se agrego al carrito " << cantidad << " veces.\n\n";
-            }
+    for (int i = 0; i < cantidad; i++)
+    {
+        carrito.push_back(productoSeleccionado);
+    }
+
+    for (auto it = productos.begin(); it != productos.end(); ++it) {
+        if (it->nombre == productoSeleccionado.nombre) {
+            it->inventario -= cantidad;
+            break;
         }
     }
+
+
+    system("cls");
+    MostrarProductos();
+
+    if (cantidad == 1)
+    {
+        cout << "Se agregó un artículo '" << productoSeleccionado.nombre << "' al carrito.\n\n";
+    }
+    else
+    {
+        cout << "El producto '" << productoSeleccionado.nombre << "' se agregó al carrito " << cantidad << " veces.\n\n";
+    }
 }
+
+
 
 void MostrarCarrito()
 {
@@ -425,21 +434,15 @@ void menuCliente() {
     int seleccion, client;
     bool compraFinalizada = false; // Bandera para controlar si la compra está finalizada
     while (!compraFinalizada) {
-        cout << "Ingrese el numero del producto para agregar al carrito o 0 para finalizar la compra: ";
-        cin >> seleccion;
-
-        if (cin.fail()) {
-            cin.clear();  // Limpiar el estado de error
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Ignorar la entrada incorrecta
-            cout << "Entrada no válida. Por favor ingrese un número." << endl;
+        int seleccion = ObtenerNumeroValido("Ingrese el número del producto para agregar al carrito o 0 para finalizar la compra: ");
+        
+        if (seleccion == 0) {
+            compraFinalizada = true; // Establecer la bandera para finalizar la compra
         } else {
-            if (seleccion == 0) {
-                compraFinalizada = true; // Establecer la bandera para finalizar la compra
-            } else {
-                AgregarProducto(seleccion);
-            }
+            AgregarProducto(seleccion);
         }
     }
+
 
     if (cantYtotal()) {
         return; // Salir de la función si la compra está vacía
