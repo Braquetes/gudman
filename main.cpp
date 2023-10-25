@@ -87,7 +87,6 @@ int ObtenerNumeroValido(const string &mensaje) {
     }
 }
 
-
 void MostrarProductos()
 {
     titulo("Productos disponibles");
